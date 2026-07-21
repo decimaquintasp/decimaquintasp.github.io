@@ -1,34 +1,48 @@
-const CLIENT_ID = CONFIG.CLIENT_ID;
-const SHEET_ID = CONFIG.SHEET_ID;
-const SCOPES = CONFIG.SCOPES;
-const RANGE_LINKS = CONFIG.RANGE_LINKS;
-const RANGE_CONFIG = CONFIG.RANGE_CONFIG;
-const PROXY_URL = CONFIG.PROXY_URL;
+// Usa CONFIG de config.js (carregado antes deste script)
+// Se CONFIG nao estiver definido, usa fallback para exibir erro sem quebrar
+const _C = typeof CONFIG !== 'undefined' ? CONFIG : {};
+const API_KEY = _C.API_KEY || '';
+const SHEET_ID = _C.SHEET_ID || '';
+const SCOPES = _C.SCOPES || '';
+const RANGE_LINKS = _C.RANGE_LINKS || 'Sheet1!A:F';
+const RANGE_CONFIG = _C.RANGE_CONFIG || 'Sheet2!A:B';
+const WIZARD_URL = _C.WIZARD_URL || 'https://demotree-wizard.vercel.app';
 
+// ═══════════════════════════════════════════════════════
+// Estado
+// ═══════════════════════════════════════════════════════
 let accessToken = null;
 let todosLinks = [];
 let modoModal = null;
 let linhaEditar = null;
 let modoReorganizar = false;
 
-let tokenClient;
-function initTokenClient() {
-    tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: CLIENT_ID, scope: SCOPES,
-        callback: (resp) => {
-            if (resp.error) { toast('Erro no login: ' + resp.error, 'error'); return; }
-            accessToken = resp.access_token;
-            onLoginSuccess();
-        },
-    });
+// ═══════════════════════════════════════════════════════
+// Auth
+// ═══════════════════════════════════════════════════════
+function handleLogin() {
+  const origin = encodeURIComponent(window.location.origin);
+  const popup = window.open(WIZARD_URL + '/oauth-popup.html?origin=' + origin, 'oauth-popup', 'width=500,height=700');
+  if (!popup) {
+    toast('Popup bloqueado. Permita popups para este site.', 'error');
+  }
 }
-function handleLogin() { if (!tokenClient) initTokenClient(); tokenClient.requestAccessToken({ prompt: 'consent' }); }
+
 function handleLogout() {
-    if (accessToken) google.accounts.oauth2.revoke(accessToken);
-    accessToken = null;
-    document.getElementById('tela-login').style.display = 'flex';
-    document.getElementById('painel').style.display = 'none';
+  if (accessToken && typeof google !== 'undefined' && google.accounts?.oauth2?.revoke) {
+    google.accounts.oauth2.revoke(accessToken);
+  }
+  accessToken = null;
+  document.getElementById('tela-login').style.display = 'flex';
+  document.getElementById('painel').style.display = 'none';
 }
+
+window.addEventListener('message', async (event) => {
+  if (event.data?.type !== 'google-oauth') return;
+  if (!event.data.accessToken) return;
+  accessToken = event.data.accessToken;
+  onLoginSuccess();
+});
 async function onLoginSuccess() {
     try {
         const r = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${accessToken}` } });
@@ -41,12 +55,18 @@ async function onLoginSuccess() {
     await carregarConfig();
 }
 
+// ═══════════════════════════════════════════════════════
+// API helpers
+// ═══════════════════════════════════════════════════════
 function sheetsUrl(range, params = '', suffix = '') {
     return `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(range)}${suffix}${params}`;
 }
 function authHeaders() { return { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' }; }
 function batchUrl() { return `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values:batchUpdate`; }
 
+// ═══════════════════════════════════════════════════════
+// Carregar Links
+// ═══════════════════════════════════════════════════════
 async function carregarLinks() {
     const loadEl = document.getElementById('links-loading');
     loadEl.style.display = 'flex';
@@ -74,9 +94,14 @@ async function carregarLinks() {
     finally { loadEl.style.display = 'none'; }
 }
 
+// ═══════════════════════════════════════════════════════
+// Construir blocos dentro de uma categoria
+// Cada bloco = 1 subcategoria inteira OU 1 link avulso (sem subcat)
+// ═══════════════════════════════════════════════════════
 function construirBlocos(categoria) {
     const linksNaCat = todosLinks.filter(l => l.categoria === categoria);
 
+    // Primeiro os que têm subcategoria, agrupados, ordenados por ordemSubcat
     const subcatMap = {};
     const avulsos = [];
     linksNaCat.forEach(l => {
@@ -88,30 +113,38 @@ function construirBlocos(categoria) {
         }
     });
 
+    // Criar array de blocos
     const blocos = [];
 
+    // Adicionar subcategorias como blocos
     Object.entries(subcatMap)
         .sort(([, a], [, b]) => a.ordem - b.ordem)
         .forEach(([nome, dados]) => {
             blocos.push({ tipo: 'subcategoria', nome, links: dados.links.sort((a, b) => a.linha - b.linha), ordem: dados.ordem });
         });
 
+    // Adicionar links avulsos como blocos individuais
     avulsos.sort((a, b) => a.ordemSubcat - b.ordemSubcat || a.linha - b.linha)
         .forEach(l => {
             blocos.push({ tipo: 'link', nome: l.nomeLink, links: [l], ordem: l.ordemSubcat });
         });
 
+    // Ordenar todos os blocos pela ordem
     blocos.sort((a, b) => a.ordem - b.ordem);
 
     return blocos;
 }
 
+// ═══════════════════════════════════════════════════════
+// Renderizar
+// ═══════════════════════════════════════════════════════
 function renderizarLinks(links) {
     const container = document.getElementById('links-lista');
     const vazio = document.getElementById('links-vazio');
     if (links.length === 0) { container.innerHTML = ''; vazio.style.display = 'block'; return; }
     vazio.style.display = 'none';
 
+    // Categorias únicas ordenadas
     const catNomes = [];
     const catOrdens = {};
     links.forEach(l => {
@@ -122,37 +155,42 @@ function renderizarLinks(links) {
     let html = '';
 
     catNomes.forEach((cat, gi) => {
+        // Header categoria
         const catBtns = modoReorganizar
             ? `<span class="reorder-cat-btns">
-           <button class="btn-reorder" onclick="event.stopPropagation(); moverCategoria('${esc(cat)}', -1)" ${gi === 0 ? 'disabled' : ''}>&#8593;</button>
-           <button class="btn-reorder" onclick="event.stopPropagation(); moverCategoria('${esc(cat)}', 1)" ${gi === catNomes.length - 1 ? 'disabled' : ''}>&#8595;</button>
+           <button class="btn-reorder" onclick="event.stopPropagation(); moverCategoria('${esc(cat)}', -1)" ${gi === 0 ? 'disabled' : ''}>↑</button>
+           <button class="btn-reorder" onclick="event.stopPropagation(); moverCategoria('${esc(cat)}', 1)" ${gi === catNomes.length - 1 ? 'disabled' : ''}>↓</button>
          </span>` : '';
         html += `<div class="cat-header">${cat} ${catBtns}</div>`;
 
         const blocos = construirBlocos(cat);
 
         blocos.forEach((bloco, bi) => {
+            // Se é subcategoria, mostrar header
             if (bloco.tipo === 'subcategoria') {
                 const subBtns = modoReorganizar
                     ? `<span class="reorder-cat-btns">
-               <button class="btn-reorder btn-reorder-sm" onclick="event.stopPropagation(); moverBloco('${esc(cat)}', ${bi}, -1)" ${bi === 0 ? 'disabled' : ''}>&#8593;</button>
-               <button class="btn-reorder btn-reorder-sm" onclick="event.stopPropagation(); moverBloco('${esc(cat)}', ${bi}, 1)" ${bi === blocos.length - 1 ? 'disabled' : ''}>&#8595;</button>
+               <button class="btn-reorder btn-reorder-sm" onclick="event.stopPropagation(); moverBloco('${esc(cat)}', ${bi}, -1)" ${bi === 0 ? 'disabled' : ''}>↑</button>
+               <button class="btn-reorder btn-reorder-sm" onclick="event.stopPropagation(); moverBloco('${esc(cat)}', ${bi}, 1)" ${bi === blocos.length - 1 ? 'disabled' : ''}>↓</button>
              </span>` : '';
                 html += `<div class="subcat-section"><div class="subcat-header"><span>${bloco.nome}</span>${subBtns}</div>`;
             }
 
+            // Links do bloco
             bloco.links.forEach((l, i) => {
                 let arrows = '';
                 if (modoReorganizar) {
                     if (bloco.tipo === 'link') {
+                        // Link avulso: pode mover como bloco
                         arrows = `<span class="reorder-btns" onclick="event.stopPropagation()">
-              <button class="btn-reorder btn-reorder-sm" onclick="moverBloco('${esc(cat)}', ${bi}, -1)" ${bi === 0 ? 'disabled' : ''}>&#8593;</button>
-              <button class="btn-reorder btn-reorder-sm" onclick="moverBloco('${esc(cat)}', ${bi}, 1)" ${bi === blocos.length - 1 ? 'disabled' : ''}>&#8595;</button>
+              <button class="btn-reorder btn-reorder-sm" onclick="moverBloco('${esc(cat)}', ${bi}, -1)" ${bi === 0 ? 'disabled' : ''}>↑</button>
+              <button class="btn-reorder btn-reorder-sm" onclick="moverBloco('${esc(cat)}', ${bi}, 1)" ${bi === blocos.length - 1 ? 'disabled' : ''}>↓</button>
             </span>`;
                     } else {
+                        // Link dentro de subcategoria: pode trocar posição (swap de linhas)
                         arrows = `<span class="reorder-btns" onclick="event.stopPropagation()">
-              <button class="btn-reorder btn-reorder-sm" onclick="moverLinkDentroSubcat(${l.linha}, -1)" ${i === 0 ? 'disabled' : ''}>&#8593;</button>
-              <button class="btn-reorder btn-reorder-sm" onclick="moverLinkDentroSubcat(${l.linha}, 1)" ${i === bloco.links.length - 1 ? 'disabled' : ''}>&#8595;</button>
+              <button class="btn-reorder btn-reorder-sm" onclick="moverLinkDentroSubcat(${l.linha}, -1)" ${i === 0 ? 'disabled' : ''}>↑</button>
+              <button class="btn-reorder btn-reorder-sm" onclick="moverLinkDentroSubcat(${l.linha}, 1)" ${i === bloco.links.length - 1 ? 'disabled' : ''}>↓</button>
             </span>`;
                     }
                 } else {
@@ -187,6 +225,9 @@ function filtrarLinks() {
     ));
 }
 
+// ═══════════════════════════════════════════════════════
+// Salvar / Remover
+// ═══════════════════════════════════════════════════════
 async function salvarLink() {
     const cat = getCatValue();
     const sub = getSubValue();
@@ -227,13 +268,19 @@ async function removerLink() {
     } catch (e) { modalStatus('Erro: ' + e.message, 'error'); }
 }
 
+// ═══════════════════════════════════════════════════════
+// Mover BLOCO (subcategoria inteira ou link avulso)
+// Renumera todos os blocos da categoria: 1, 2, 3...
+// ═══════════════════════════════════════════════════════
 async function moverBloco(categoria, blocoIdx, direcao) {
     const blocos = construirBlocos(categoria);
     const novoIdx = blocoIdx + direcao;
     if (novoIdx < 0 || novoIdx >= blocos.length) return;
 
+    // Swap no array
     [blocos[blocoIdx], blocos[novoIdx]] = [blocos[novoIdx], blocos[blocoIdx]];
 
+    // Renumerar 1, 2, 3...
     const updates = [];
     blocos.forEach((bloco, i) => {
         const ordem = i + 1;
@@ -253,6 +300,9 @@ async function moverBloco(categoria, blocoIdx, direcao) {
     } catch (e) { toast('Erro: ' + e.message, 'error'); await carregarLinks(); }
 }
 
+// ═══════════════════════════════════════════════════════
+// Mover link dentro de subcategoria (swap de linhas)
+// ═══════════════════════════════════════════════════════
 async function moverLinkDentroSubcat(linha, direcao) {
     const link = todosLinks.find(l => l.linha === linha);
     if (!link) return;
@@ -267,6 +317,7 @@ async function moverLinkDentroSubcat(linha, direcao) {
 
     const outro = irmaos[novoIdx];
 
+    // Swap dados (manter linhas)
     const tmp = { categoria: link.categoria, ordemCat: link.ordemCat, subcategoria: link.subcategoria, ordemSubcat: link.ordemSubcat, nomeLink: link.nomeLink, url: link.url };
     const tmp2 = { categoria: outro.categoria, ordemCat: outro.ordemCat, subcategoria: outro.subcategoria, ordemSubcat: outro.ordemSubcat, nomeLink: outro.nomeLink, url: outro.url };
     Object.assign(link, tmp2);
@@ -287,6 +338,9 @@ async function moverLinkDentroSubcat(linha, direcao) {
     } catch (e) { toast('Erro: ' + e.message, 'error'); await carregarLinks(); }
 }
 
+// ═══════════════════════════════════════════════════════
+// Mover categoria inteira — renumera 1, 2, 3...
+// ═══════════════════════════════════════════════════════
 async function moverCategoria(categoria, direcao) {
     const catNomes = [];
     const visto = new Set();
@@ -319,6 +373,9 @@ async function moverCategoria(categoria, direcao) {
     } catch (e) { toast('Erro: ' + e.message, 'error'); await carregarLinks(); }
 }
 
+// ═══════════════════════════════════════════════════════
+// Config (Sheet2) — handle, facebook, instagram, logo, slides
+// ═══════════════════════════════════════════════════════
 async function carregarConfig() {
     try {
         const r = await fetch(sheetsUrl(RANGE_CONFIG), { headers: authHeaders() });
@@ -331,6 +388,7 @@ async function carregarConfig() {
             const valor = (row[1] || '').trim();
             if (chave === 'nome') {
                 document.getElementById('cfg-nome').value = valor;
+                // Aplica dinamicamente
                 if (valor) {
                     document.title = 'Admin — ' + valor;
                     const loginSub = document.getElementById('login-sub');
@@ -399,6 +457,9 @@ async function salvarConfig() {
     } catch (e) { statusEl.textContent = 'Erro: ' + e.message; statusEl.style.color = 'var(--danger)'; }
 }
 
+// ═══════════════════════════════════════════════════════
+// Modal
+// ═══════════════════════════════════════════════════════
 function abrirModal(modo, linha) {
     modoModal = modo; linhaEditar = linha || null;
     document.getElementById('modal-titulo').textContent = modo === 'adicionar' ? 'Adicionar link' : 'Editar link';
@@ -468,6 +529,9 @@ function getSubValue() {
     return { nome: sel.value, ordem: link?.ordemSubcat || 99 };
 }
 
+// ═══════════════════════════════════════════════════════
+// UI helpers
+// ═══════════════════════════════════════════════════════
 function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -491,11 +555,15 @@ function modalStatus(msg, type) {
     el.textContent = msg; el.style.color = type === 'error' ? 'var(--danger)' : 'var(--text-muted)';
 }
 
+// ═══════════════════════════════════════════════════════
+// Init
+// ═══════════════════════════════════════════════════════
 window.addEventListener('load', () => {
-    initTokenClient();
-    fetch(`${PROXY_URL}?range=${encodeURIComponent(RANGE_CONFIG)}`)
-        .then(r => r.json())
+    // Carrega nome da organização (fallback silencioso se falhar)
+    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(RANGE_CONFIG)}?key=${API_KEY}`)
+        .then(r => r.ok ? r.json() : null)
         .then(data => {
+            if (!data) return;
             (data.values || []).forEach(row => {
                 const chave = (row[0] || '').trim().toLowerCase();
                 const valor = (row[1] || '').trim();
