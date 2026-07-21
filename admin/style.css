@@ -1,3 +1,6 @@
+/* ════════════════════════════════════════════
+   PWA Admin — Style (dark theme + gold accent)
+   ════════════════════════════════════════════ */
 :root {
     --bg: #1a1a2e;
     --bg2: #16213e;
@@ -29,6 +32,7 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
+/* ── Login ── */
 #tela-login {
     display: flex;
     justify-content: center;
@@ -91,6 +95,7 @@ body {
     box-shadow: 0 6px 20px rgba(245, 186, 10, 0.3);
 }
 
+/* ── Header ── */
 header {
     display: flex;
     justify-content: space-between;
@@ -121,6 +126,7 @@ header h1 {
     border: 2px solid var(--gold);
 }
 
+/* ── Tabs ── */
 .tabs {
     display: flex;
     background: var(--bg2);
@@ -158,6 +164,7 @@ header h1 {
     display: block;
 }
 
+/* ── Toolbar ── */
 .toolbar {
     display: flex;
     gap: 10px;
@@ -179,6 +186,7 @@ header h1 {
     border-color: var(--gold);
 }
 
+/* ── Botões ── */
 .btn-primary {
     background: var(--gold);
     color: #000;
@@ -254,6 +262,7 @@ header h1 {
     background: rgba(255, 255, 255, 0.08);
 }
 
+/* ── Link Cards ── */
 .link-card {
     background: var(--bg2);
     border: 1px solid rgba(255, 255, 255, 0.06);
@@ -339,6 +348,7 @@ header h1 {
     padding-top: 0;
 }
 
+/* ── Reorganizar ── */
 #btn-reorganizar {
     font-size: 16px;
     padding: 8px 10px;
@@ -430,6 +440,7 @@ header h1 {
     box-shadow: none;
 }
 
+/* ── Slides dinâmicos ── */
 .slide-row {
     display: flex;
     align-items: center;
@@ -473,6 +484,7 @@ header h1 {
     opacity: 1;
 }
 
+/* ── Modal ── */
 #modal-overlay {
     display: none;
     position: fixed;
@@ -499,6 +511,7 @@ header h1 {
     from {
         transform: translateY(100%);
     }
+
     to {
         transform: translateY(0);
     }
@@ -541,6 +554,7 @@ header h1 {
     min-height: 16px;
 }
 
+/* ── Formulário ── */
 .campo {
     margin-bottom: 14px;
 }
@@ -592,6 +606,7 @@ header h1 {
     gap: 8px;
 }
 
+/* ── Config ── */
 .config-form {
     max-width: 500px;
 }
@@ -603,6 +618,7 @@ header h1 {
     min-height: 18px;
 }
 
+/* ── Misc ── */
 .loading-inline {
     display: flex;
     align-items: center;
@@ -639,6 +655,7 @@ header h1 {
     display: block;
 }
 
+/* ── Toast ── */
 #toast {
     position: fixed;
     bottom: -60px;
@@ -669,6 +686,7 @@ header h1 {
     border-color: var(--danger);
 }
 
+/* ── Desktop adjustments ── */
 @media (min-width: 768px) {
     #modal {
         bottom: auto;
@@ -687,6 +705,7 @@ header h1 {
             opacity: 0;
             transform: translate(-50%, -45%);
         }
+
         to {
             opacity: 1;
             transform: translate(-50%, -50%);
