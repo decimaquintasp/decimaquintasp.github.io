@@ -1,90 +1,69 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demotree</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat|Staatliches&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <link rel="shortcut icon" href="/imgs/img.ico">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Links e recursos da 15ª Região Demolay.">
+  <title>15ª Região</title>
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Montserrat|Staatliches&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <div id="arvore">
-        <div id="logo">
-            <img draggable="false" src="imgs/logo.png" alt="Logo">
-            <p style="text-align: center; font-size: larger;"><b>15° Região</b></p>
-        </div>
+  <div id="arvore">
 
-        <main>
-            <div class="slider-container">
-                <div class="slider">
-                    <img src="imgs/1.png" onclick="openModal(this)">
-                    <img src="imgs/2.png" onclick="openModal(this)">
-                    <img src="imgs/3.png" onclick="openModal(this)">
-                    <img src="imgs/4.png" onclick="openModal(this)">
-                    <img src="imgs/5.png" onclick="openModal(this)">
-                </div>
-                <button class="prev" onclick="prevSlide()">❮</button>
-                <button class="next" onclick="nextSlide()">❯</button>
-            </div>
-            
-            <!-- Modal para exibir imagem em tela cheia -->
-            <div class="modal" id="imageModal">
-                <span class="close" onclick="closeModal()">×</span>
-                <img id="modalImage">
-            </div>
-            <section id="opcoes">
-                <ul id="lista">
-                    <li class="lista">
-                        <button class="accordion"><big><b>Área do Escrivão</b></big></button>
-                        <div class="panel">
-                            <a class="linksgerais botaopanel" href="https://drive.google.com/drive/folders/128idbcSFDNSyPvCyhrlGnk1L_jXFmcak?usp=drive_link" target="_blank">Guias</a>
-                        </div>
-                    </li>
-                    <li class="lista">
-                        <button class="accordion"><big><b>Área do Hospitaleiro</b></big></button>
-                        <div class="panel">
-                            <a class="linksgerais botaopanel" href="https://drive.google.com/drive/folders/1sDe1QQuIaYtE-qoxveCZ1lrQh8wdVtY_?usp=drive_link" target="_blank">Guias</a>
-                        </div>
-                    </li>
-                    <li class="lista">
-                        <button class="accordion"><big><b>Regulamentos, Instruções e Estudos</b></big></button>
-                        <div class="panel">
-                            <a class="linksgerais botaopanel" href="https://drive.google.com/drive/folders/1aQe72fQghtfzplG0QYFdoj5VfIoyWB8z?usp=drive_link" target="_blank">Regulamentos</a>
-                            <a class="linksgerais botaopanel" href="https://drive.google.com/drive/folders/1LKv61j_NiHtEZNBtplT-h0CRrG3fJpvw?usp=drive_link" target="_blank">Instruções</a>
-                            <a class="linksgerais botaopanel" href="https://drive.google.com/drive/folders/1fyXabDQVA_0BHK3r8oPURBQHSnPK_lK5?usp=drive_link" target="_blank">Estudos</a>
-                            <a class="linksgerais botaopanel" href="https://drive.google.com/drive/folders/1RH0E9MTfNoe94s1yKpGYHNQfRQxoTwvK?usp=drive_link" target="_blank">Taxas Administrativas</a>
-                        </div>
-                    </li>
-                    <li class="lista">
-                        <button class="accordion"><big><b>Editais</b></big></button>
-                        <div class="panel">
-                            <button class="accordion"><big><b>Gabinete Nacional</b></big></button>
-                            <div class="panel">
-                                <a class="linksgerais botaopanel" href="https://drive.google.com/drive/folders/1g_ZiKoXyuXtaVFWpiWJMBhraCmb-_-Yj?usp=drive_link" target="_blank">Capítulos</a>
-                                <a class="linksgerais botaopanel" href="https://drive.google.com/drive/folders/1DiT3hakPa-GA4M3Dqtd_Bd4Dia04Xur1?usp=drive_link" target="_blank">Castelos</a>
-                                <a class="linksgerais botaopanel" href="https://drive.google.com/drive/folders/1YlKyKXgUJVnvExuf5_EL0BNEv24Gu2nM?usp=drive_link" target="_blank">Priorados</a>
-                            </div>
-                            <a class="linksgerais botaopanel" href="https://drive.google.com/drive/folders/1RVarke0SF2ZABWmjVmxddH7gJmuRQjvt?usp=drive_link" target="_blank">Gabinete Estadual</a>
-                        </div>
-                    </li>
-                    <li class="lista">
-                        <button class="accordion"><big><b>Eventos</b></big></button>
-                        <div class="panel">
-                            <a class="linksgerais botaopanel" href="https://drive.google.com/drive/folders/1LlZXR1dd1skW7DYXEvU_2Z_v36Qq-jGy?usp=drive_link" target="_blank">Eventos Regionais</a>
-                        </div>
-                    </li>
-                </ul>
-
-                <div class="icon-bar">
-                    <a href="https://www.instagram.com/15regiaodmsp/" target="_blank" class="instagram"><i class="fa fa-instagram"></i></a>
-                </div>
-            </section>
-        </main>
+    <div id="logo">
+      <img id="logo-img" draggable="false" src="imgs/logo.png" alt="">
+      <br>
+      <p><b id="handle"></b></p>
     </div>
 
-    <script src="script.js"></script>
+    <main>
+      <section id="opcoes">
+
+        <div class="slider-container" id="slider-container" style="display:none;">
+          <div class="slider" id="slider"></div>
+          <button class="slider-prev" onclick="prevSlide()">&#10094;</button>
+          <button class="slider-next" onclick="nextSlide()">&#10095;</button>
+        </div>
+
+        <div id="imageModal" onclick="closeModal()"
+          style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; justify-content:center; align-items:center; cursor:zoom-out;">
+          <img id="modalImage" style="max-width:90vw; max-height:90vh; border-radius:8px;">
+        </div>
+
+        <div id="loading">
+          <div class="spinner"></div>
+          <p>Carregando links...</p>
+        </div>
+
+        <div id="erro" style="display:none;">
+          <p>&#9888;&#65039; N&atilde;o foi poss&iacute;vel carregar os links. Tente novamente mais tarde.</p>
+        </div>
+
+        <ul id="lista"></ul>
+
+        <div class="icon-bar">
+          <a id="link-facebook" href="#" target="_blank" class="facebook" aria-label="Facebook" style="display:none;">
+            <i class="fa fa-facebook"></i>
+          </a>
+          <a id="link-instagram" href="#" target="_blank" class="instagram" aria-label="Instagram"
+            style="display:none;">
+            <i class="fa fa-instagram"></i>
+          </a>
+        </div>
+
+      </section>
+    </main>
+
+  </div>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
 </body>
+
 </html>

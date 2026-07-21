@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="description" content="">
+    <title>Admin</title>
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div id="tela-login">
+        <div class="login-card">
+            <div class="login-logo">&#128279;</div>
+            <h1>Painel Admin</h1>
+            <p class="login-sub" id="login-sub"></p>
+            <button id="btn-login" onclick="handleLogin()">
+                <i class="fa-brands fa-google"></i> Entrar com Google
+            </button>
+            <p class="login-hint">Use a conta com acesso de editor na planilha</p>
+        </div>
+    </div>
+
+    <div id="painel" style="display:none">
+
+        <header>
+            <div class="header-left">
+                <h1>&#128279; Admin</h1>
+            </div>
+            <div class="header-right">
+                <img id="user-avatar" class="avatar" src="" alt="avatar">
+                <button class="btn-icon" onclick="handleLogout()" title="Sair">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('links')">Links</button>
+            <button class="tab" onclick="switchTab('config')">Configurações</button>
+        </div>
+
+        <div id="tab-links" class="tab-content active">
+            <div class="toolbar">
+                <input type="text" id="busca" placeholder="&#128269; Buscar link..." oninput="filtrarLinks()">
+                <button class="btn-icon" id="btn-reorganizar" onclick="toggleReorganizar()" title="Reorganizar">
+                    <i class="fa-solid fa-arrows-up-down"></i>
+                </button>
+                <button class="btn-primary" onclick="abrirModal('adicionar')">
+                    <i class="fa-solid fa-plus"></i> Novo
+                </button>
+            </div>
+
+            <div id="links-loading" class="loading-inline">
+                <div class="spinner-sm"></div> Carregando...
+            </div>
+
+            <div id="links-lista"></div>
+            <div id="links-vazio" class="empty" style="display:none">
+                <i class="fa-solid fa-folder-open"></i>
+                <p>Nenhum link encontrado</p>
+            </div>
+        </div>
+
+        <div id="tab-config" class="tab-content">
+            <div class="config-form">
+                <div class="campo">
+                    <label>Nome da organização</label>
+                    <input type="text" id="cfg-nome" placeholder="Ex: 15ª Região">
+                </div>
+                <div class="campo">
+                    <label>Descrição do site <span class="hint">(meta description)</span></label>
+                    <input type="text" id="cfg-descricao" placeholder="Ex: Links e recursos da...">
+                </div>
+                <div class="campo">
+                    <label>Handle (@)</label>
+                    <input type="text" id="cfg-handle" placeholder="@seunome">
+                </div>
+                <div class="campo">
+                    <label>Facebook URL</label>
+                    <input type="url" id="cfg-facebook" placeholder="https://facebook.com/...">
+                </div>
+                <div class="campo">
+                    <label>Instagram URL</label>
+                    <input type="url" id="cfg-instagram" placeholder="https://instagram.com/...">
+                </div>
+                <div class="campo">
+                    <label>Logo URL <span class="hint">(opcional — padrão: logo.png)</span></label>
+                    <input type="url" id="cfg-logo" placeholder="https://drive.google.com/file/d/.../view">
+                </div>
+
+                <div class="campo">
+                    <label>Imagens do Slider</label>
+                    <div id="slides-container"></div>
+                    <button type="button" class="btn-secondary btn-full" onclick="adicionarSlide()"
+                        style="margin-top:8px">
+                        <i class="fa-solid fa-plus"></i> Adicionar slide
+                    </button>
+                </div>
+
+                <button class="btn-primary btn-full" onclick="salvarConfig()" style="margin-top:16px">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar configurações
+                </button>
+                <div id="config-status"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-overlay" onclick="fecharModal()"></div>
+    <div id="modal">
+        <div class="modal-header">
+            <h2 id="modal-titulo">Adicionar link</h2>
+            <button class="btn-icon" onclick="fecharModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="campo">
+                <label>Categoria *</label>
+                <select id="m-categoria" onchange="onCatChange()">
+                    <option value="">Selecione...</option>
+                </select>
+            </div>
+            <div class="campo" id="m-nova-cat-div" style="display:none">
+                <label>Nome da nova categoria</label>
+                <div class="row">
+                    <input type="text" id="m-nova-cat" placeholder="Ex: Documentos" style="flex:2">
+                    <input type="number" id="m-ordem-cat" placeholder="Ordem" min="1" value="99" style="flex:1">
+                </div>
+            </div>
+            <div class="campo">
+                <label>Subcategoria <span class="hint">(opcional)</span></label>
+                <select id="m-subcategoria" onchange="onSubChange()">
+                    <option value="__sem__">— Sem subcategoria —</option>
+                </select>
+            </div>
+            <div class="campo" id="m-nova-sub-div" style="display:none">
+                <label>Nome da nova subcategoria</label>
+                <div class="row">
+                    <input type="text" id="m-nova-sub" placeholder="Ex: Em andamento" style="flex:2">
+                    <input type="number" id="m-ordem-sub" placeholder="Ordem" min="1" value="99" style="flex:1">
+                </div>
+            </div>
+            <div class="campo">
+                <label>Nome do link *</label>
+                <input type="text" id="m-nome" placeholder="Ex: Modelo de Indicação">
+            </div>
+            <div class="campo">
+                <label>URL *</label>
+                <input type="url" id="m-url" placeholder="https://drive.google.com/...">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button id="btn-remover" class="btn-danger" onclick="removerLink()" style="display:none">
+                <i class="fa-solid fa-trash"></i> Remover
+            </button>
+            <div class="modal-footer-right">
+                <button class="btn-secondary" onclick="fecharModal()">Cancelar</button>
+                <button class="btn-primary" id="btn-salvar" onclick="salvarLink()">Salvar</button>
+            </div>
+        </div>
+        <div id="modal-status"></div>
+    </div>
+
+    <div id="toast"></div>
+
+    <script src="https://accounts.google.com/gsi/client"></script>
+    <script src="../config.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
