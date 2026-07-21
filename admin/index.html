@@ -15,9 +15,10 @@
 
 <body>
 
+    <!-- ════ Tela de Login ════ -->
     <div id="tela-login">
         <div class="login-card">
-            <div class="login-logo">&#128279;</div>
+            <div class="login-logo">🔗</div>
             <h1>Painel Admin</h1>
             <p class="login-sub" id="login-sub"></p>
             <button id="btn-login" onclick="handleLogin()">
@@ -27,11 +28,13 @@
         </div>
     </div>
 
+    <!-- ════ Painel Principal ════ -->
     <div id="painel" style="display:none">
 
+        <!-- Header -->
         <header>
             <div class="header-left">
-                <h1>&#128279; Admin</h1>
+                <h1>🔗 Admin</h1>
             </div>
             <div class="header-right">
                 <img id="user-avatar" class="avatar" src="" alt="avatar">
@@ -41,14 +44,16 @@
             </div>
         </header>
 
+        <!-- Tabs -->
         <div class="tabs">
             <button class="tab active" onclick="switchTab('links')">Links</button>
             <button class="tab" onclick="switchTab('config')">Configurações</button>
         </div>
 
+        <!-- ══ Tab: Links ══ -->
         <div id="tab-links" class="tab-content active">
             <div class="toolbar">
-                <input type="text" id="busca" placeholder="&#128269; Buscar link..." oninput="filtrarLinks()">
+                <input type="text" id="busca" placeholder="🔍 Buscar link..." oninput="filtrarLinks()">
                 <button class="btn-icon" id="btn-reorganizar" onclick="toggleReorganizar()" title="Reorganizar">
                     <i class="fa-solid fa-arrows-up-down"></i>
                 </button>
@@ -68,11 +73,12 @@
             </div>
         </div>
 
+        <!-- ══ Tab: Configurações ══ -->
         <div id="tab-config" class="tab-content">
             <div class="config-form">
                 <div class="campo">
                     <label>Nome da organização</label>
-                    <input type="text" id="cfg-nome" placeholder="Ex: 15ª Região">
+                    <input type="text" id="cfg-nome" placeholder="Ex: União Joaquinense">
                 </div>
                 <div class="campo">
                     <label>Descrição do site <span class="hint">(meta description)</span></label>
@@ -91,7 +97,7 @@
                     <input type="url" id="cfg-instagram" placeholder="https://instagram.com/...">
                 </div>
                 <div class="campo">
-                    <label>Logo URL <span class="hint">(opcional — padrão: logo.png)</span></label>
+                    <label>Logo URL <span class="hint">(opcional — padrão: brasao.png)</span></label>
                     <input type="url" id="cfg-logo" placeholder="https://drive.google.com/file/d/.../view">
                 </div>
 
@@ -112,6 +118,7 @@
         </div>
     </div>
 
+    <!-- ════ Modal de Adicionar/Editar ════ -->
     <div id="modal-overlay" onclick="fecharModal()"></div>
     <div id="modal">
         <div class="modal-header">
@@ -168,9 +175,10 @@
         <div id="modal-status"></div>
     </div>
 
+    <!-- ════ Toast ════ -->
     <div id="toast"></div>
 
-    <script src="https://accounts.google.com/gsi/client"></script>
+    <!-- Scripts -->
     <script src="../config.js"></script>
     <script src="app.js"></script>
 </body>
