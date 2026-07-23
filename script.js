@@ -99,6 +99,12 @@ function applyConfig(config) {
     i++;
   }
   if (slides.length > 0) buildSlider(slides);
+
+  if (config.cor_fundo) {
+    document.body.style.background = config.cor_fundo;
+  } else {
+    document.body.style.background = '';
+  }
 }
 
 async function fetchLinks() {
