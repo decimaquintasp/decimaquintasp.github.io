@@ -101,7 +101,7 @@ function applyConfig(config) {
   if (slides.length > 0) buildSlider(slides);
 
   if (config.cor_fundo) {
-    document.body.style.background = config.cor_fundo;
+    document.body.style.background = `linear-gradient(${config.cor_fundo}, #000000)`;
   } else {
     document.body.style.background = '';
   }
